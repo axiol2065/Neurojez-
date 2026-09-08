@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Neurojez — Invitación P2P</title>
+
+<style>
+body {
+    font-family: system-ui, sans-serif;
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    text-align: center;
+    background: #111;
+    color: white;
+}
+
+.box {
+    background: #1d1d1d;
+    border-radius: 20px;
+    padding: 25px;
+}
+
+button,
+a {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px;
+    margin: 14px 0;
+    border-radius: 14px;
+    font-size: 17px;
+    text-decoration: none;
+}
+
+button {
+    border: 0;
+    cursor: pointer;
+    background: white;
+    color: black;
+}
+
+a {
+    border: 1px solid #555;
+    color: white;
+}
+
+#descargar {
+    display: none;
+}
+
+#estado {
+    line-height: 1.5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>♟️ Neurojez</h1>
+
+<h2>Invitación a partida</h2>
+
+<p id="estado">
+Preparando la invitación…
+</p>
+
+<button id="abrir" style="display:none">
+Abrir Neurojez
+</button>
+
+<a
+    id="descargar"
+    href="https://github.com/axiol2065/Neurojez-"
+>
+    Descargar Neurojez
+</a>
+
+</div>
+
+<script>
+
+const parametros = new URLSearchParams(
+    window.location.search
+);
+
+const estado = document.getElementById("estado");
+const abrir = document.getElementById("abrir");
+const descargar = document.getElementById("descargar");
+
+/*
+ * Comprobamos que la invitación tenga
+ * los datos mínimos de WebRTC.
+ */
+if (
+    parametros.has("v") &&
+    parametros.has("s") &&
+    parametros.has("k")
+) {
+
+    estado.textContent =
+        "Esta invitación contiene una partida P2P.";
+
+    abrir.style.display = "block";
+
+    abrir.onclick = function () {
+
+        estado.textContent =
+            "Intentando abrir Neurojez…";
+
+        /*
+         * Reconstruimos el enlace interno.
+         *
+         * La URL HTTPS es la que recibe WhatsApp.
+         * chessp2p solamente se utiliza internamente
+         * para abrir la aplicación.
+         */
+        const datos =
+            parametros.toString();
+
+        const enlaceNeurojez =
+            "chessp2p://join?" + datos;
+
+        /*
+         * Intentar abrir la aplicación.
+         */
+        window.location.href =
+            enlaceNeurojez;
+
+        /*
+         * Si Android no abrió Neurojez,
+         * mostramos la descarga.
+         */
+        setTimeout(function () {
+
+            estado.textContent =
+                "Neurojez no parece estar instalada.";
+
+            descargar.style.display =
+                "block";
+
+        }, 2000);
+    };
+
+} else {
+
+    estado.textContent =
+        "La invitación no es válida o está incompleta.";
+
+}
+
+</script>
+
+</body>
+</html>
