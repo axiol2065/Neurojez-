@@ -166,9 +166,9 @@ a{
 
 
     /*
-     * --------------------------------------------------------
+     * ========================================================
      * ELEMENTOS
-     * --------------------------------------------------------
+     * ========================================================
      */
 
     var estado =
@@ -182,9 +182,9 @@ a{
 
 
     /*
-     * --------------------------------------------------------
+     * ========================================================
      * PARÁMETROS DE LA INVITACIÓN
-     * --------------------------------------------------------
+     * ========================================================
      */
 
     var parametros =
@@ -194,9 +194,9 @@ a{
 
 
     /*
-     * --------------------------------------------------------
-     * VALIDAR INVITACIÓN
-     * --------------------------------------------------------
+     * ========================================================
+     * VALIDACIÓN P2P
+     * ========================================================
      */
 
     var tieneVersion =
@@ -216,12 +216,173 @@ a{
 
 
     /*
-     * --------------------------------------------------------
+     * ========================================================
+     * CAPA DE MÚSICA INVISIBLE
+     *
+     * Estos parámetros NO se muestran en la página.
+     *
+     * music_id
+     * music_name
+     * music_artist
+     * music_favorite
+     *
+     * Ejemplo:
+     *
+     * ?v=1&s=abc&k=xyz
+     * &music_id=42
+     * &music_name=Mi%20cancion
+     * &music_artist=Neurojez
+     * &music_favorite=1
+     *
+     * ========================================================
+     */
+
+    var musica = {
+
+        id:
+            parametros.get("music_id") || "",
+
+        nombre:
+            parametros.get("music_name") || "",
+
+        artista:
+            parametros.get("music_artist") || "",
+
+        favorita:
+            parametros.get("music_favorite") === "1"
+
+    };
+
+
+    /*
+     * ========================================================
+     * NORMALIZAR METADATOS
+     * ========================================================
+     */
+
+    function limpiarTexto(valor){
+
+        if(typeof valor !== "string"){
+            return "";
+        }
+
+        return valor
+            .trim()
+            .substring(0, 200);
+
+    }
+
+
+    musica.id =
+        limpiarTexto(musica.id);
+
+    musica.nombre =
+        limpiarTexto(musica.nombre);
+
+    musica.artista =
+        limpiarTexto(musica.artista);
+
+
+    /*
+     * ========================================================
+     * GUARDAR PREFERENCIA LOCAL
+     *
+     * Solo se almacena en el dispositivo.
+     * No se muestra al usuario.
+     * ========================================================
+     */
+
+    function guardarPreferenciaMusica(){
+
+        if(
+            !musica.id
+            && !musica.nombre
+            && !musica.artista
+        ){
+            return;
+        }
+
+        var datos = {
+
+            id: musica.id,
+
+            nombre: musica.nombre,
+
+            artista: musica.artista,
+
+            favorita: musica.favorita,
+
+            fecha:
+                Date.now()
+
+        };
+
+
+        try{
+
+            window.localStorage.setItem(
+                "neurojez_music_preference",
+                JSON.stringify(datos)
+            );
+
+        }catch(error){
+
+            /*
+             * LocalStorage puede estar bloqueado.
+             * No rompemos la invitación.
+             */
+
+        }
+
+    }
+
+
+    /*
+     * ========================================================
+     * OBTENER METADATOS MUSICALES
+     *
+     * Esta función queda disponible para futuras
+     * integraciones con el WebView.
+     * ========================================================
+     */
+
+    window.NeurojezMusic =
+        function(){
+
+            return {
+
+                id:
+                    musica.id,
+
+                nombre:
+                    musica.nombre,
+
+                artista:
+                    musica.artista,
+
+                favorita:
+                    musica.favorita
+
+            };
+
+        };
+
+
+    /*
+     * ========================================================
      * INVITACIÓN VÁLIDA
-     * --------------------------------------------------------
+     * ========================================================
      */
 
     if(invitacionValida){
+
+        /*
+         * Guardamos los datos musicales
+         * sin modificar la interfaz.
+         */
+
+        guardarPreferenciaMusica();
+
 
         estado.textContent =
             "Esta invitación contiene una partida P2P.";
@@ -238,6 +399,24 @@ a{
                     "Intentando abrir Neurojez…";
 
 
+                /*
+                 * ------------------------------------------------
+                 * IMPORTANTE:
+                 *
+                 * Conservamos TODOS los parámetros.
+                 *
+                 * Esto permite que:
+                 *
+                 * v
+                 * s
+                 * k
+                 *
+                 * y los metadatos musicales
+                 *
+                 * lleguen juntos a Neurojez.
+                 * ------------------------------------------------
+                 */
+
                 var datos =
                     parametros.toString();
 
@@ -247,7 +426,7 @@ a{
 
 
                 /*
-                 * Intentamos abrir la aplicación.
+                 * Intentamos abrir Neurojez.
                  */
 
                 window.location.href =
@@ -255,8 +434,7 @@ a{
 
 
                 /*
-                 * Si no está instalada,
-                 * mostramos la descarga.
+                 * Si la aplicación no está instalada.
                  */
 
                 window.setTimeout(
@@ -280,9 +458,9 @@ a{
 
 
     /*
-     * --------------------------------------------------------
+     * ========================================================
      * SIN INVITACIÓN
-     * --------------------------------------------------------
+     * ========================================================
      */
 
     estado.textContent =
