@@ -2,52 +2,295 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+>
+
 <title>Neurojez — Invitación P2P</title>
+
 <style>
-body{font-family:system-ui,sans-serif;max-width:620px;margin:0 auto;padding:40px 20px;text-align:center;background:#111;color:#fff}
-.box{background:#1d1d1d;border-radius:20px;padding:25px}
-button,a{display:block;width:100%;box-sizing:border-box;padding:16px;margin:14px 0;border-radius:14px;font-size:17px;text-decoration:none}
-button{border:0;cursor:pointer;background:#fff;color:#000}
-a{border:1px solid #555;color:#fff}
-#descargar{display:none}
-#estado{line-height:1.5;word-break:break-word}
+
+html,
+body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+}
+
+body{
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background:#111;
+    color:#fff;
+
+    padding:40px 20px;
+}
+
+.contenedor{
+    width:100%;
+    max-width:620px;
+    margin:0 auto;
+}
+
+.box{
+    background:#1d1d1d;
+    border:1px solid #333;
+    border-radius:20px;
+
+    padding:25px;
+
+    text-align:center;
+
+    box-sizing:border-box;
+}
+
+h1{
+    margin:0 0 10px 0;
+    font-size:32px;
+}
+
+h2{
+    margin:0 0 15px 0;
+    font-size:22px;
+}
+
+p{
+    line-height:1.5;
+    margin:12px 0;
+}
+
+button,
+a{
+    width:100%;
+    display:block;
+
+    box-sizing:border-box;
+
+    padding:16px;
+
+    margin-top:14px;
+
+    border-radius:14px;
+
+    font-size:17px;
+
+    text-align:center;
+
+    text-decoration:none;
+}
+
+button{
+    border:0;
+    background:#fff;
+    color:#000;
+
+    cursor:pointer;
+}
+
+a{
+    border:1px solid #555;
+    background:#222;
+    color:#fff;
+}
+
+#abrir{
+    display:none;
+}
+
+#descargar{
+    display:none;
+}
+
+#estado{
+    word-break:break-word;
+}
+
 </style>
 </head>
+
+
 <body>
-<div class="box">
-<h1>♟️ Neurojez</h1>
-<h2>Invitación a partida</h2>
-<p id="estado">Preparando la invitación…</p>
-<button id="abrir" style="display:none">Abrir Neurojez</button>
-<a id="descargar" href="https://github.com/axiol2065/Neurojez-" rel="noopener">Descargar Neurojez</a>
+
+<div class="contenedor">
+
+    <div class="box">
+
+        <h1>♟️ Neurojez</h1>
+
+        <h2>Invitación a partida</h2>
+
+        <p id="estado">
+            Preparando la invitación…
+        </p>
+
+        <button
+            id="abrir"
+            type="button"
+        >
+            Abrir Neurojez
+        </button>
+
+        <a
+            id="descargar"
+            href="https://github.com/axiol2065/Neurojez-"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            Descargar Neurojez
+        </a>
+
+        <noscript>
+            <p>
+                Esta página necesita JavaScript para abrir
+                automáticamente la invitación.
+            </p>
+        </noscript>
+
+    </div>
+
 </div>
+
+
 <script>
-const parametros = new URLSearchParams(window.location.search);
-const estado = document.getElementById("estado");
-const abrir = document.getElementById("abrir");
-const descargar = document.getElementById("descargar");
 
-function esInvitacionValida(){
-    return parametros.has("v") && parametros.has("s") && parametros.has("k");
-}
+(function(){
 
-if(esInvitacionValida()){
-    estado.textContent = "Esta invitación contiene una partida P2P.";
-    abrir.style.display = "block";
-    abrir.onclick = function(){
-        estado.textContent = "Intentando abrir Neurojez…";
-        const datos = parametros.toString();
-        const enlaceNeurojez = "chessp2p://join?" + datos;
-        window.location.href = enlaceNeurojez;
-        setTimeout(function(){
-            estado.textContent = "Neurojez no parece estar instalada en este dispositivo.";
-            descargar.style.display = "block";
-        },1800);
-    };
-}else{
-    estado.textContent = "La invitación no es válida o está incompleta.";
-}
+    "use strict";
+
+
+    /*
+     * --------------------------------------------------------
+     * ELEMENTOS
+     * --------------------------------------------------------
+     */
+
+    var estado =
+        document.getElementById("estado");
+
+    var abrir =
+        document.getElementById("abrir");
+
+    var descargar =
+        document.getElementById("descargar");
+
+
+    /*
+     * --------------------------------------------------------
+     * PARÁMETROS DE LA INVITACIÓN
+     * --------------------------------------------------------
+     */
+
+    var parametros =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    /*
+     * --------------------------------------------------------
+     * VALIDAR INVITACIÓN
+     * --------------------------------------------------------
+     */
+
+    var tieneVersion =
+        parametros.has("v");
+
+    var tieneSesion =
+        parametros.has("s");
+
+    var tieneClave =
+        parametros.has("k");
+
+
+    var invitacionValida =
+        tieneVersion
+        && tieneSesion
+        && tieneClave;
+
+
+    /*
+     * --------------------------------------------------------
+     * INVITACIÓN VÁLIDA
+     * --------------------------------------------------------
+     */
+
+    if(invitacionValida){
+
+        estado.textContent =
+            "Esta invitación contiene una partida P2P.";
+
+        abrir.style.display =
+            "block";
+
+
+        abrir.addEventListener(
+            "click",
+            function(){
+
+                estado.textContent =
+                    "Intentando abrir Neurojez…";
+
+
+                var datos =
+                    parametros.toString();
+
+
+                var enlaceNeurojez =
+                    "chessp2p://join?" + datos;
+
+
+                /*
+                 * Intentamos abrir la aplicación.
+                 */
+
+                window.location.href =
+                    enlaceNeurojez;
+
+
+                /*
+                 * Si no está instalada,
+                 * mostramos la descarga.
+                 */
+
+                window.setTimeout(
+                    function(){
+
+                        estado.textContent =
+                            "Neurojez no parece estar instalada en este dispositivo.";
+
+                        descargar.style.display =
+                            "block";
+
+                    },
+                    1800
+                );
+
+            }
+        );
+
+        return;
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * SIN INVITACIÓN
+     * --------------------------------------------------------
+     */
+
+    estado.textContent =
+        "La invitación no es válida o está incompleta.";
+
+})();
+
 </script>
+
 </body>
 </html>
