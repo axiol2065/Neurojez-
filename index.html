@@ -94,6 +94,11 @@ button{
     cursor:pointer;
 }
 
+button:disabled{
+    opacity:0.7;
+    cursor:default;
+}
+
 a{
     border:1px solid #555;
     background:#222;
@@ -217,7 +222,7 @@ a{
 
     /*
      * ========================================================
-     * CAPA DE MÚSICA INVISIBLE
+     * MÚSICA
      * ========================================================
      */
 
@@ -240,7 +245,7 @@ a{
 
     /*
      * ========================================================
-     * NORMALIZAR METADATOS
+     * LIMPIAR TEXTO
      * ========================================================
      */
 
@@ -269,7 +274,7 @@ a{
 
     /*
      * ========================================================
-     * GUARDAR PREFERENCIA LOCAL
+     * GUARDAR PREFERENCIA MUSICAL
      * ========================================================
      */
 
@@ -285,13 +290,17 @@ a{
 
         var datos = {
 
-            id: musica.id,
+            id:
+                musica.id,
 
-            nombre: musica.nombre,
+            nombre:
+                musica.nombre,
 
-            artista: musica.artista,
+            artista:
+                musica.artista,
 
-            favorita: musica.favorita,
+            favorita:
+                musica.favorita,
 
             fecha:
                 Date.now()
@@ -348,6 +357,270 @@ a{
 
     /*
      * ========================================================
+     * CONTROL DE APERTURA
+     * ========================================================
+     */
+
+    var intentandoAbrir =
+        false;
+
+    var paginaOculta =
+        false;
+
+
+    document.addEventListener(
+        "visibilitychange",
+        function(){
+
+            if(document.hidden){
+
+                paginaOculta = true;
+
+            }
+
+        }
+    );
+
+
+    window.addEventListener(
+        "pagehide",
+        function(){
+
+            paginaOculta = true;
+
+        }
+    );
+
+
+    window.addEventListener(
+        "blur",
+        function(){
+
+            /*
+             * No declaramos automáticamente que la app
+             * está instalada. Solo registramos que el
+             * navegador perdió el foco.
+             */
+
+            paginaOculta = true;
+
+        }
+    );
+
+
+    /*
+     * ========================================================
+     * CONSTRUIR ENLACE P2P
+     * ========================================================
+     */
+
+    function crearEnlaceP2P(){
+
+        /*
+         * IMPORTANTE:
+         *
+         * Conservamos TODOS los parámetros originales.
+         *
+         * Ejemplo:
+         *
+         * v
+         * m
+         * t
+         * k
+         * c
+         * s
+         * music_id
+         * music_name
+         * music_artist
+         * music_favorite
+         *
+         */
+
+        var datos =
+            parametros.toString();
+
+
+        return (
+            "chessp2p://join?"
+            + datos
+        );
+
+    }
+
+
+    /*
+     * ========================================================
+     * CREAR INTENT ANDROID
+     * ========================================================
+     */
+
+    function crearIntentAndroid(){
+
+        var datos =
+            parametros.toString();
+
+
+        /*
+         * El esquema sigue siendo chessp2p porque es el
+         * esquema que debe tener la versión de neurojez
+         * que ya está distribuida.
+         */
+
+        return (
+            "intent://join?"
+            + datos
+            + "#Intent;"
+            + "scheme=chessp2p;"
+            + "end"
+        );
+
+    }
+
+
+    /*
+     * ========================================================
+     * ABRIR NEUROJEZ
+     * ========================================================
+     */
+
+    function abrirNeurojez(){
+
+        if(intentandoAbrir){
+
+            return;
+
+        }
+
+
+        intentandoAbrir =
+            true;
+
+        paginaOculta =
+            false;
+
+
+        estado.textContent =
+            "Abriendo neurojez…";
+
+
+        abrir.disabled =
+            true;
+
+
+        /*
+         * ----------------------------------------------------
+         * ENLACE NORMAL
+         * ----------------------------------------------------
+         */
+
+        var enlaceNormal =
+            crearEnlaceP2P();
+
+
+        /*
+         * ----------------------------------------------------
+         * INTENT ANDROID
+         * ----------------------------------------------------
+         *
+         * Primero usamos el intent de Android.
+         *
+         */
+
+        var enlaceIntent =
+            crearIntentAndroid();
+
+
+        /*
+         * En Android/Chrome normalmente el intent://
+         * permite entregar la navegación a la aplicación
+         * registrada para chessp2p.
+         */
+
+        window.location.href =
+            enlaceIntent;
+
+
+        /*
+         * ----------------------------------------------------
+         * FALLBACK
+         * ----------------------------------------------------
+         *
+         * NO mostramos inmediatamente que la app
+         * no está instalada.
+         *
+         * Damos tiempo a Android.
+         *
+         */
+
+        window.setTimeout(
+            function(){
+
+                /*
+                 * Si la página perdió visibilidad,
+                 * probablemente Android cambió a la app.
+                 */
+
+                if(paginaOculta){
+
+                    return;
+
+                }
+
+
+                /*
+                 * Segundo intento usando el URI normal.
+                 *
+                 * Esto ayuda con navegadores que no
+                 * procesan intent:// de la misma manera.
+                 */
+
+                estado.textContent =
+                    "Intentando abrir neurojez…";
+
+
+                window.location.href =
+                    enlaceNormal;
+
+
+                /*
+                 * Último fallback.
+                 */
+
+                window.setTimeout(
+                    function(){
+
+                        if(paginaOculta){
+
+                            return;
+
+                        }
+
+
+                        estado.textContent =
+                            "No se pudo abrir neurojez. Comprueba que la aplicación esté instalada.";
+
+                        abrir.disabled =
+                            false;
+
+                        intentarAbrir =
+                            false;
+
+                        descargar.style.display =
+                            "block";
+
+                    },
+                    2500
+                );
+
+            },
+            1500
+        );
+
+    }
+
+
+    /*
+     * ========================================================
      * INVITACIÓN VÁLIDA
      * ========================================================
      */
@@ -360,90 +633,31 @@ a{
         estado.textContent =
             "Esta invitación contiene una partida P2P.";
 
+
         abrir.style.display =
             "block";
 
 
         abrir.addEventListener(
             "click",
-            function(){
-
-                estado.textContent =
-                    "Intentando abrir neurojez…";
-
-
-                /*
-                 * Conservamos TODOS los parámetros:
-                 *
-                 * v
-                 * s
-                 * k
-                 * music_id
-                 * music_name
-                 * music_artist
-                 * music_favorite
-                 *
-                 */
-
-                var datos =
-                    parametros.toString();
-
-
-                /*
-                 * =================================================
-                 * DEEP LINK DE NEUROJEZ
-                 *
-                 * IMPORTANTE:
-                 * "chessp2p" NO es el nombre de la aplicación.
-                 * Es el esquema que Android utiliza para entregar
-                 * la invitación a neurojez.
-                 * =================================================
-                 */
-
-                var enlaceNeurojez =
-                    "chessp2p://join?" + datos;
-
-
-                /*
-                 * Abrir neurojez
-                 */
-
-                window.location.href =
-                    enlaceNeurojez;
-
-
-                /*
-                 * Si no está instalada
-                 */
-
-                window.setTimeout(
-                    function(){
-
-                        estado.textContent =
-                            "neurojez no parece estar instalada en este dispositivo.";
-
-                        descargar.style.display =
-                            "block";
-
-                    },
-                    1800
-                );
-
-            }
+            abrirNeurojez
         );
 
+
         return;
+
     }
 
 
     /*
      * ========================================================
-     * SIN INVITACIÓN
+     * INVITACIÓN INVÁLIDA
      * ========================================================
      */
 
     estado.textContent =
         "La invitación no es válida o está incompleta.";
+
 
 })();
 
