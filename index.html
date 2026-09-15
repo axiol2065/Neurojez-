@@ -190,6 +190,15 @@ a{
      * ========================================================
      * PARÁMETROS DE LA INVITACIÓN
      * ========================================================
+     *
+     * IMPORTANTE: este esquema debe coincidir EXACTAMENTE con
+     * el que genera _p2p_publicar_enlace_local() en el .gd:
+     *
+     *   ESQUEMA + "?v=" + PROTOCOLO + "&m=" + modo + "&room=" + room_id
+     *
+     * Parámetros reales que manda el juego: v, m, room.
+     * (Antes esta página esperaba "s" y "k", que el juego nunca
+     * envía — por eso toda invitación se marcaba como inválida.)
      */
 
     var parametros =
@@ -207,17 +216,17 @@ a{
     var tieneVersion =
         parametros.has("v");
 
-    var tieneSesion =
-        parametros.has("s");
+    var tieneModo =
+        parametros.has("m");
 
-    var tieneClave =
-        parametros.has("k");
+    var tieneSala =
+        parametros.has("room");
 
 
     var invitacionValida =
         tieneVersion
-        && tieneSesion
-        && tieneClave;
+        && tieneModo
+        && tieneSala;
 
 
     /*
@@ -419,21 +428,9 @@ a{
         /*
          * IMPORTANTE:
          *
-         * Conservamos TODOS los parámetros originales.
-         *
-         * Ejemplo:
-         *
-         * v
-         * m
-         * t
-         * k
-         * c
-         * s
-         * music_id
-         * music_name
-         * music_artist
-         * music_favorite
-         *
+         * Conservamos TODOS los parámetros originales tal
+         * como los generó el juego (v, m, room, y opcionales
+         * de música).
          */
 
         var datos =
@@ -602,7 +599,7 @@ a{
                         abrir.disabled =
                             false;
 
-                        intentarAbrir =
+                        intentandoAbrir =
                             false;
 
                         descargar.style.display =
